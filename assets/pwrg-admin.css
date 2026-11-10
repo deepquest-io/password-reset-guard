@@ -1,0 +1,157 @@
+/* Password Reset Guard — admin styles */
+
+.pwrg-wrap h1 {
+	margin-bottom: 12px;
+}
+
+.pwrg-stats {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	margin: 16px 0 20px;
+}
+
+.pwrg-stat {
+	min-width: 120px;
+	padding: 14px 20px;
+	border: 1px solid #c3c4c7;
+	border-left: 4px solid #2271b1;
+	border-radius: 4px;
+	background: #fff;
+	text-align: left;
+}
+
+.pwrg-stat span {
+	display: block;
+	font-size: 22px;
+	font-weight: 600;
+	line-height: 1.2;
+}
+
+.pwrg-stat small {
+	font-size: 11px;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	color: #646970;
+}
+
+.pwrg-filters {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+	align-items: flex-end;
+	margin-bottom: 12px;
+}
+
+.pwrg-filters label {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.pwrg-filters label span {
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	color: #646970;
+}
+
+.pwrg-filters input {
+	min-width: 120px;
+}
+
+.pwrg-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-bottom: 12px;
+}
+
+.pwrg-danger {
+	color: #b32d2e !important;
+	border-color: #b32d2e !important;
+}
+
+.pwrg-table th {
+	white-space: nowrap;
+}
+
+.pwrg-table .pwrg-sort {
+	cursor: pointer;
+	user-select: none;
+}
+
+.pwrg-table .pwrg-sort::after {
+	content: '';
+	opacity: 0.4;
+}
+
+.pwrg-table .pwrg-sorted-asc::after {
+	content: ' ▲';
+	font-size: 10px;
+	opacity: 1;
+}
+
+.pwrg-table .pwrg-sorted-desc::after {
+	content: ' ▼';
+	font-size: 10px;
+	opacity: 1;
+}
+
+.pwrg-strong {
+	font-weight: 600;
+}
+
+.pwrg-mono {
+	font-family: Menlo, Consolas, monospace;
+	font-size: 12px;
+}
+
+.pwrg-flag {
+	margin-right: 4px;
+	font-size: 15px;
+}
+
+.pwrg-empty {
+	padding: 32px;
+	text-align: center;
+	color: #646970;
+}
+
+.pwrg-tag-vpn,
+.pwrg-tag-tor,
+.pwrg-tag-clean {
+	display: inline-block;
+	padding: 1px 8px;
+	border-radius: 3px;
+	font-size: 11px;
+	font-weight: 600;
+	line-height: 1.6;
+}
+
+.pwrg-tag-vpn {
+	background: #d63638;
+	color: #fff;
+}
+
+.pwrg-tag-tor {
+	background: #8c5aa8;
+	color: #fff;
+}
+
+.pwrg-tag-clean {
+	background: #edfaef;
+	color: #007017;
+}
+
+.pwrg-pagination {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+	margin: 12px 0 24px;
+}
+
+.pwrg-page-label {
+	color: #646970;
+	font-size: 12px;
+}
