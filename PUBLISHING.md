@@ -190,6 +190,7 @@ Both. GitHub is the development source; WordPress.org is the distribution channe
 - [x] `Requires at least: 5.8`, `Requires PHP: 7.4`, `Tested up to: 7.1`
 - [x] Plugin Check: 0 errors
 - [x] Four screenshots at 1300px wide
+- [x] `banner-1544x500.png` + `banner-772x250.png`, `icon-128x128.png` + `icon-256x256.png` (in `.wordpress-org/`)
 - [x] No site names, IPs, credentials or absolute paths
 - [ ] `Contributors:` changed to the real WordPress.org username
 - [ ] Zip uploaded at https://wordpress.org/plugins/developers/add/
