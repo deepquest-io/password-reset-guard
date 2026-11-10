@@ -24,6 +24,7 @@ rsync -a \
   --exclude 'node_modules' \
   --exclude '.DS_Store' \
   --exclude 'PUBLISHING.md' \
+  --exclude 'SUBMISSION.md' \
   --exclude '*.zip' \
   ./ "${STAGE}/${NAME}/"
 
