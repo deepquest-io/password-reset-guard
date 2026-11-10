@@ -1,8 +1,9 @@
 <?php
 /**
  * Plugin Name:       Password Reset Guard
+ * Plugin URI:        https://github.com/deepquest-io/password-reset-guard
  * Description:       Logs and rate-limits WordPress password-reset abuse, then closes the user-enumeration holes that make it profitable: REST users endpoint, XML-RPC, author archives and shortlinks.
- * Version:           2.0.0
+ * Version:           2.0.1
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * Author:            deepquest
@@ -16,7 +17,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'PWRG_VERSION', '2.0.0' );
+define( 'PWRG_VERSION', '2.0.1' );
 define( 'PWRG_FILE', __FILE__ );
 define( 'PWRG_DIR', plugin_dir_path( __FILE__ ) );
 define( 'PWRG_URL', plugin_dir_url( __FILE__ ) );

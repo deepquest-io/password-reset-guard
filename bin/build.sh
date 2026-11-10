@@ -17,11 +17,13 @@ mkdir -p "${STAGE}/${NAME}"
 rsync -a \
   --exclude 'build' \
   --exclude 'bin' \
+  --exclude '.wordpress-org' \
   --exclude 'tests' \
   --exclude '.git' \
   --exclude '.gitignore' \
   --exclude 'node_modules' \
   --exclude '.DS_Store' \
+  --exclude 'PUBLISHING.md' \
   --exclude '*.zip' \
   ./ "${STAGE}/${NAME}/"
 

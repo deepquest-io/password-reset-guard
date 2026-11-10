@@ -4,6 +4,10 @@ A WordPress plugin that logs and rate-limits password reset abuse, then closes t
 
 WordPress fires `lostpassword_post` for **every** password reset request — including requests for usernames that don't exist. That turns the "Lost your password?" form into a free username oracle and a free way to flood any user's inbox. This plugin makes it a dead end.
 
+
+![Log screen](.wordpress-org/screenshot-1.png)
+![Tor filter](.wordpress-org/screenshot-2.png)
+
 ## What it does
 
 **Logs every attempt.** Username (valid or not), resolved user ID, IP, country, repeat count, first and last seen. Sortable, filterable, CSV-exportable, auto-pruned.
@@ -56,6 +60,16 @@ Requires WordPress 5.8+, PHP 7.4+.
 | Geolocation | off |
 | Enumeration hardening | all on |
 
+## Why these defaults
+
+**Admins are never blocked.** Any logged-in user with `manage_options` bypasses every limit, so a tight threshold can slow an attacker down but cannot lock the owner out of their own recovery flow.
+
+**Proxy headers are not trusted.** `X-Forwarded-For` is spoofable by any client. The client IP comes from `REMOTE_ADDR` until you enable proxy trust for Cloudflare or a reverse proxy you control.
+
+**Geolocation is opt-in.** Enabling it discloses visitor IPs to a third party. It ships off, and the provider is replaceable via `pwrg_geo_lookup` / `pwrg_geo_endpoint`.
+
+**Nothing outside the database.** One table on activation; uninstall drops the table, options, transients and cron event, on every site of a multisite network.
+
 ## Hooks
 
 ```php
@@ -84,6 +98,14 @@ add_action( 'pwrg_ip_blocked', function ( $ip, $count ) {
     error_log( "Blocked {$ip} after {$count} reset attempts" );
 }, 10, 2 );
 ```
+
+## Requirements
+
+- WordPress 5.8+
+- PHP 7.4+
+- MySQL 5.7+ / MariaDB 10.2+ (`INSERT ... ON DUPLICATE KEY UPDATE`)
+
+No theme, page builder, cache plugin or host is required.
 
 ## Uninstalling
 
