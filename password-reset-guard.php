@@ -3,7 +3,7 @@
  * Plugin Name:       Password Reset Guard
  * Plugin URI:        https://github.com/deepquest-io/password-reset-guard
  * Description:       Logs and rate-limits WordPress password-reset abuse, then closes the user-enumeration holes that make it profitable: REST users endpoint, XML-RPC, author archives and shortlinks.
- * Version:           2.0.1
+ * Version:           2.0.2
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * Author:            deepquest
@@ -17,7 +17,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'PWRG_VERSION', '2.0.1' );
+define( 'PWRG_VERSION', '2.0.2' );
 define( 'PWRG_FILE', __FILE__ );
 define( 'PWRG_DIR', plugin_dir_path( __FILE__ ) );
 define( 'PWRG_URL', plugin_dir_url( __FILE__ ) );
@@ -108,8 +108,9 @@ register_deactivation_hook( __FILE__, 'pwrg_deactivate' );
 function pwrg_activate() {
 	global $wpdb;
 
-	$table = esc_sql( $wpdb->prefix . 'pwrg_log' );
 	$charset = $wpdb->get_charset_collate();
+
+	$table = $wpdb->prefix . 'pwrg_log';
 
 	$sql = "CREATE TABLE {$table} (
 		id           BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -324,7 +325,9 @@ function pwrg_log_reset( $errors, $user_data = false ) {
 
 	set_transient( $key, $count, $window );
 
-	$raw   = isset( $_POST['user_login'] ) ? sanitize_text_field( wp_unslash( $_POST['user_login'] ) ) : '';
+	// The lost-password form is rendered and nonce-verified by wp-login.php itself;
+	// this hook only observes the submitted value.
+	$raw = isset( $_POST['user_login'] ) ? sanitize_text_field( wp_unslash( $_POST['user_login'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 	$user  = ( $user_data instanceof WP_User ) ? $user_data : false;
 
 	// The hook does not always hand us a resolved user; look it up so the log
@@ -683,14 +686,13 @@ function pwrg_is_tor_exit( $ip ) {
 function pwrg_store_attempt( $username, $user_id, $ip ) {
 	global $wpdb;
 
-	$table = esc_sql( $wpdb->prefix . 'pwrg_log' );
 	$geo   = pwrg_geo_lookup( $ip );
 	$now   = current_time( 'mysql' );
 
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 	$wpdb->query(
 		$wpdb->prepare(
-			"INSERT INTO {$table}
+			"INSERT INTO {$wpdb->prefix}pwrg_log
 				(username, user_id, ip_address, country, country_code, is_vpn, is_tor, reset_count, first_seen, last_seen)
 			 VALUES (%s, %d, %s, %s, %s, %d, %d, 1, %s, %s)
 			 ON DUPLICATE KEY UPDATE
@@ -713,7 +715,7 @@ function pwrg_store_attempt( $username, $user_id, $ip ) {
 		)
 	);
 
-	$total = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table}" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+	$total = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}pwrg_log" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 
 	if ( $total > (int) pwrg_setting( 'max_entries' ) ) {
 		pwrg_prune_log();
@@ -726,11 +728,10 @@ function pwrg_store_attempt( $username, $user_id, $ip ) {
 function pwrg_prune_log() {
 	global $wpdb;
 
-	$table = esc_sql( $wpdb->prefix . 'pwrg_log' );
 	$max   = max( 100, (int) pwrg_setting( 'max_entries' ) );
 
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-	$total = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table}" );
+	$total = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}pwrg_log" );
 
 	if ( $total <= $max ) {
 		return;
@@ -741,7 +742,7 @@ function pwrg_prune_log() {
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 	$wpdb->query(
 		$wpdb->prepare(
-			"DELETE FROM {$table} ORDER BY last_seen ASC LIMIT %d",
+			"DELETE FROM {$wpdb->prefix}pwrg_log ORDER BY last_seen ASC LIMIT %d",
 			$excess
 		)
 	);
@@ -755,17 +756,16 @@ function pwrg_prune_log() {
 function pwrg_get_stats() {
 	global $wpdb;
 
-	$table = esc_sql( $wpdb->prefix . 'pwrg_log' );
 
 	// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 	return array(
-		'total'      => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table}" ),
-		'unique_ips' => (int) $wpdb->get_var( "SELECT COUNT(DISTINCT ip_address) FROM {$table}" ),
-		'vpn'        => (int) $wpdb->get_var( "SELECT COUNT(DISTINCT ip_address) FROM {$table} WHERE is_vpn = 1" ),
-		'tor'        => (int) $wpdb->get_var( "SELECT COUNT(DISTINCT ip_address) FROM {$table} WHERE is_tor = 1" ),
+		'total'      => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}pwrg_log" ),
+		'unique_ips' => (int) $wpdb->get_var( "SELECT COUNT(DISTINCT ip_address) FROM {$wpdb->prefix}pwrg_log" ),
+		'vpn'        => (int) $wpdb->get_var( "SELECT COUNT(DISTINCT ip_address) FROM {$wpdb->prefix}pwrg_log WHERE is_vpn = 1" ),
+		'tor'        => (int) $wpdb->get_var( "SELECT COUNT(DISTINCT ip_address) FROM {$wpdb->prefix}pwrg_log WHERE is_tor = 1" ),
 		'last24h'    => (int) $wpdb->get_var(
 			$wpdb->prepare(
-				"SELECT COUNT(*) FROM {$table} WHERE last_seen > %s",
+				"SELECT COUNT(*) FROM {$wpdb->prefix}pwrg_log WHERE last_seen > %s",
 				gmdate( 'Y-m-d H:i:s', time() - DAY_IN_SECONDS )
 			)
 		),
@@ -798,7 +798,6 @@ function pwrg_query_log( $args = array() ) {
 		)
 	);
 
-	$table = esc_sql( $wpdb->prefix . 'pwrg_log' );
 	$where   = array( '1=1' );
 	$params  = array();
 
@@ -839,21 +838,26 @@ function pwrg_query_log( $args = array() ) {
 
 	$sql_where = implode( ' AND ', $where );
 
-	// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL, WordPress.DB.PreparedSQLPlaceholders
+	/*
+	 * $sql_where is assembled from a fixed set of literal fragments above; every
+	 * user-supplied value travels as a %s/%d placeholder. The identifier is
+	 * $wpdb->prefix plus a literal table name, so nothing here is unescaped input.
+	 */
+	// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL, WordPress.DB.PreparedSQLPlaceholders, PluginCheck.Security.DirectDB
 	if ( $params ) {
-		$count = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$table} WHERE {$sql_where}", $params ) );
+		$count = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$wpdb->prefix}pwrg_log WHERE {$sql_where}", $params ) );
 		$rows  = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT * FROM {$table} WHERE {$sql_where} ORDER BY {$sort} {$dir} LIMIT %d OFFSET %d",
+				"SELECT * FROM {$wpdb->prefix}pwrg_log WHERE {$sql_where} ORDER BY {$sort} {$dir} LIMIT %d OFFSET %d",
 				array_merge( $params, array( $per_page, $offset ) )
 			),
 			ARRAY_A
 		);
 	} else {
-		$count = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table} WHERE {$sql_where}" );
+		$count = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}pwrg_log WHERE {$sql_where}" );
 		$rows  = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT * FROM {$table} WHERE {$sql_where} ORDER BY {$sort} {$dir} LIMIT %d OFFSET %d",
+				"SELECT * FROM {$wpdb->prefix}pwrg_log WHERE {$sql_where} ORDER BY {$sort} {$dir} LIMIT %d OFFSET %d",
 				$per_page,
 				$offset
 			),

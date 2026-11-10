@@ -4,7 +4,7 @@ Tags: security, password reset, user enumeration, brute force, xmlrpc
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.0.1
+Stable tag: 2.0.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -126,6 +126,13 @@ Yes. Settings and the log table are per site, and uninstall cleans up every site
 
 == Changelog ==
 
+= 2.0.2 =
+* Plugin Check clean: no errors, no warnings.
+* Table identifiers are interpolated from `$wpdb->prefix` directly instead of a pre-escaped variable, which removes the false-positive SQL interpolation notices without weakening escaping.
+* Documented the one place where the plugin reads `$_POST` without its own nonce — the lost-password form, which `wp-login.php` renders and verifies.
+* Uninstall's `DROP TABLE` is annotated as an intentional schema change.
+* No behavioural change.
+
 = 2.0.1 =
 * Added a Plugin URI pointing at the source repository.
 * Expanded the description, FAQ and privacy notes.
@@ -153,6 +160,9 @@ Yes. Settings and the log table are per site, and uninstall cleans up every site
 * Initial release.
 
 == Upgrade Notice ==
+
+= 2.0.2 =
+Static-analysis clean-up only. No behaviour change.
 
 = 2.0.1 =
 Documentation and artwork update only. No behaviour change.

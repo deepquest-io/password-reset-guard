@@ -271,10 +271,9 @@ class PWRG_Admin {
 
 		global $wpdb;
 
-		$table = esc_sql( $wpdb->prefix . 'pwrg_log' );
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		$wpdb->query( "DELETE FROM {$table}" );
+		$wpdb->query( "DELETE FROM {$wpdb->prefix}pwrg_log" );
 
 		wp_send_json_success( array( 'message' => __( 'Log cleared.', 'password-reset-guard' ) ) );
 	}
